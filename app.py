@@ -1,7 +1,9 @@
-import hashlib
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, session
 from bs4 import BeautifulSoup
+from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.triggers.interval import IntervalTrigger
+import hashlib
 import re
 import sqlite3
 import bcrypt
@@ -49,13 +51,11 @@ def index():
 @app.route('/trips')
 @login_required
 def trips():
-    scrape_and_load_offers()  # Scrape and load offers into the database
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute('SELECT * FROM trips')
+    c.execute('SELECT * FROM trips ORDER BY price ASC')
     trips = c.fetchall()
     conn.close()
-
     return render_template('trips.html', trips=trips)
 
 
@@ -116,49 +116,63 @@ def logout():
 # Scrapes the website for holiday offers and loads them into the database
 def scrape_and_load_offers():
     print("Starting scraping...")
-    url = 'https://r.pl/szukaj?wybraneSkad=KTW&wybraneSkad=KRK&typTransportu=AIR&data=2023-06-24&data=2023-07-30&dorosli=1992-01-01&dorosli=1992-01-01&dzieci=2020-05-23&dzieci=2012-08-22&liczbaPokoi=1&dowolnaLiczbaPokoi=nie&wyzywienia=all-inclusive&wyzywienia=3-posilki&wyzywienia=2-posilki&dlugoscPobytu=*-*&dlugoscPobytu.od=8&dlugoscPobytu.do=&odlegloscLotnisko=*-*&cena=sum&cena.od=&cena.do=&ocenaKlientow=&sortowanie=cena-asc'
 
-    response = requests.get(url)
-    soup = BeautifulSoup(response.content, 'html.parser')
+    urls = [
+        'https://r.pl/szukaj?wybraneSkad=KTW&wybraneSkad=KRK&typTransportu=AIR&data=2023-06-24&data=2023-07-30&dorosli=1992-01-01&dorosli=1992-01-01&dzieci=2020-05-23&dzieci=2012-08-22&liczbaPokoi=1&dowolnaLiczbaPokoi=nie&wyzywienia=all-inclusive&wyzywienia=3-posilki&wyzywienia=2-posilki&dlugoscPobytu=*-*&dlugoscPobytu.od=8&dlugoscPobytu.do=&odlegloscLotnisko=*-*&cena=sum&cena.od=&cena.do=&ocenaKlientow=&sortowanie=cena-asc',
+        'https://r.pl/szukaj?wybraneSkad=KTW&wybraneSkad=KRK&typTransportu=AIR&data=2023-05-18&data=2023-06-30&dorosli=1992-01-01&dorosli=1992-01-01&dzieci=2020-05-23&dzieci=2012-08-22&liczbaPokoi=1&dowolnaLiczbaPokoi=nie&wyzywienia=all-inclusive&wyzywienia=3-posilki&wyzywienia=2-posilki&dlugoscPobytu=*-*&dlugoscPobytu.od=8&dlugoscPobytu.do=&odlegloscLotnisko=*-*&cena=sum&cena.od=&cena.do=&ocenaKlientow=&sortowanie=cena-asc']
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
-    trip_divs = soup.findAll("div", class_="r-card__body")
-    for trip_div in trip_divs:
-        title = trip_div.find("span", class_="r-bloczek-tytul").text.strip()
-        location = trip_div.find("span", class_="r-bloczek-lokalizacja").text.strip()
-        days = trip_div.find("div", class_="r-bloczek-wlasciwosc__dni").text.strip()
-        price = trip_div.find("div", class_="r-bloczek-cena").text.strip()
-        departure_location = trip_div.find("span", class_="r-bloczek-przystanki__info").previous_sibling.strip()
+    for url in urls:
+        response = requests.get(url)
+        soup = BeautifulSoup(response.content, 'html.parser')
 
-        price = re.sub(r'\D', '', price)
-        days = days.split(')')[0].strip().replace("(", "- ")
+        trip_divs = soup.findAll("div", class_="r-card__body")
+        for trip_div in trip_divs:
+            title = trip_div.find("span", class_="r-bloczek-tytul").text.strip()
+            location = trip_div.find("span", class_="r-bloczek-lokalizacja").text.strip()
+            days = trip_div.find("div", class_="r-bloczek-wlasciwosc__dni").text.strip()
+            price = trip_div.find("div", class_="r-bloczek-cena").text.strip()
+            departure_location_element = trip_div.find("span", class_="r-bloczek-przystanki__info")
+            departure_location = departure_location_element.previous_sibling.strip() if departure_location_element else ""
+            price = re.sub(r'\D', '', price)
+            days = days.split(')')[0].strip().replace("(", "- ")
 
-        # Generate trip hash
-        trip_hash = hashlib.md5((title + location + days + departure_location).encode('utf-8')).hexdigest()
+            # Generate trip hash
+            trip_hash = hashlib.md5((title + location + days + departure_location).encode('utf-8')).hexdigest()
 
-        # Check if trip already exists in the database
-        c.execute('SELECT price FROM trips WHERE trip_hash = ?', (trip_hash,))
-        row = c.fetchone()
+            # Check if trip already exists in the database
+            c.execute('SELECT price FROM trips WHERE trip_hash = ?', (trip_hash,))
+            row = c.fetchone()
 
-        if row:
-            stored_price = row[0]
+            if row:
+                stored_price = row[0]
 
-            if int(price) != stored_price:
-                # Update the price and set the previous price as the last price
-                c.execute('UPDATE trips SET price = ?, last_price = ? WHERE trip_hash = ?',
-                          (int(price), stored_price, trip_hash))
-        else:
-            # Insert the new trip into the database
-            c.execute(
-                'INSERT INTO trips (title, location, days, price, last_price, departure_location, trip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                (title, location, days, int(price), int(price), departure_location, trip_hash))
+                if int(price) != stored_price:
+                    # Update the price and set the previous price as the last price
+                    c.execute('UPDATE trips SET price = ?, last_price = ? WHERE trip_hash = ?',
+                              (int(price), stored_price, trip_hash))
+            else:
+                # Insert the new trip into the database
+                c.execute(
+                    'INSERT INTO trips (title, location, days, price, last_price, departure_location, trip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                    (title, location, days, int(price), int(price), departure_location, trip_hash))
 
     conn.commit()
     conn.close()
 
     print("Scraping completed!")
 
+
+def schedule_scraping():
+    with app.app_context():
+        print("Scraping scheduled...")
+        scheduler = BackgroundScheduler(daemon=True)
+        scheduler.add_job(scrape_and_load_offers, trigger=IntervalTrigger(minutes=1))
+        scheduler.start()
+
+
+schedule_scraping()
 
 if __name__ == '__main__':
     app.run(debug=True)
