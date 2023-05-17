@@ -17,8 +17,12 @@
         <table>
             <thead>
                 <tr>
-                    <th>Destination</th>
+                    <th>Hotel name</th>
+                    <th>Type + Location</th>
+                    <th>Date + length</th>
                     <th>Price</th>
+                    <th>Last Price</th>
+                    <th>Departure Location</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,6 +30,10 @@
                 <tr>
                     <td>{{ trip[1] }}</td>
                     <td>{{ trip[2] }}</td>
+                    <td>{{ trip[3] }}</td>
+                    <td>{{ trip[4] }}</td>
+                    <td>{{ trip[5] }}</td>
+                    <td>{{ trip[6] }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
