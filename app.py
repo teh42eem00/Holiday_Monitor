@@ -167,7 +167,7 @@ def scrape_and_load_offers():
             price = re.sub(r'\D', '', price)
 
             # Generate trip hash
-            trip_hash = hashlib.md5((title + location + days + departure_location).encode('utf-8')).hexdigest()
+            trip_hash = hashlib.md5((title + location + days + departure_location + food + persons_formatted).encode('utf-8')).hexdigest()
 
             # Check if trip already exists in the database
             c.execute('SELECT price FROM trips WHERE trip_hash = ?', (trip_hash,))
