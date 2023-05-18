@@ -2,42 +2,50 @@
 <html>
 <head>
     <title>Trips</title>
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 </head>
 <body>
-    <div class="container">
-        <h1>Trips</h1>
-        <nav>
-            <div class="nav-wrapper">
-                <ul id="nav-mobile" class="right">
-                    <li><a href="/logout">Logout</a></li>
-                </ul>
-            </div>
-        </nav>
-        <table>
-            <thead>
-                <tr>
-                    <th>Hotel name</th>
-                    <th>Type + Location</th>
-                    <th>Date + length</th>
-                    <th>Price</th>
-                    <th>Last Price</th>
-                    <th>Departure Location</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for trip in trips %}
-                <tr>
-                    <td>{{ trip[1] }}</td>
-                    <td>{{ trip[2] }}</td>
-                    <td>{{ trip[3] }}</td>
-                    <td>{{ trip[4] }}</td>
-                    <td>{{ trip[5] }}</td>
-                    <td>{{ trip[6] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<div class="container">
+    <h1>Trips</h1>
+    <nav>
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li><a href="/trips">All</a></li>
+                <li><a href="/trips?adults=2&children=0">All 2+0</a></li>
+                <li><a href="/trips?adults=2&children=2">All 2+2</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+    <table>
+        <thead>
+        <tr>
+            <th>Hotel name</th>
+            <th>Type + Location</th>
+            <th>Date + length</th>
+            <th>Price</th>
+            <th>Last Price</th>
+            <th>Departure Location</th>
+            <th>Food</th>
+            <th>Persons</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for trip in trips %}
+            <tr>
+                <td>{{ trip[1] }}</td>
+                <td>{{ trip[2] }}</td>
+                <td>{{ trip[3] }}</td>
+                <td style="color: {% if trip[4] < trip[5] %}green{% elif trip[4] > trip[5] %}red{% endif %}; font-weight: {% if trip[4] != trip[5] %}bold{% endif %}">{{ trip[4] }}</td>
+                <td>{{ trip[5] }}</td>
+                <td>{{ trip[6] }}</td>
+                <td>{{ trip[7] }}</td>
+                <td>{{ trip[8] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 </body>
 </html>

@@ -33,7 +33,7 @@ def create_database():
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS trips
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, location TEXT, days TEXT, price INTEGER, last_price INTEGER, departure_location TEXT, trip_hash TEXT)''')
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, location TEXT, days TEXT, price INTEGER, last_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, trip_hash TEXT)''')
     conn.commit()
     conn.close()
 
@@ -53,10 +53,23 @@ def index():
 def trips():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
-    c.execute('SELECT * FROM trips ORDER BY price ASC')
+
+    # Retrieve the number of adults and children from the URL query parameters
+    adults = int(request.args.get('adults', 0))
+    children = int(request.args.get('children', 0))
+
+    if adults == 2 and children == 0:
+        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 0 children"')
+    elif adults == 2 and children == 2:
+        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 2 children"')
+    else:
+        c.execute('SELECT * FROM trips ORDER BY price ASC')
+
     trips = c.fetchall()
     conn.close()
-    return render_template('trips.html', trips=trips)
+
+    return render_template('trips.html', trips=trips, adults=adults, children=children)
+
 
 
 # Route for user registration
@@ -113,13 +126,16 @@ def logout():
     return redirect(url_for('login'))
 
 
+def load_urls_from_file():
+    with open("static/urls.txt", "r") as file:
+        return [line.strip() for line in file]
+
+
 # Scrapes the website for holiday offers and loads them into the database
 def scrape_and_load_offers():
     print("Starting scraping...")
 
-    urls = [
-        'https://r.pl/szukaj?wybraneSkad=KTW&wybraneSkad=KRK&typTransportu=AIR&data=2023-06-24&data=2023-07-30&dorosli=1992-01-01&dorosli=1992-01-01&dzieci=2020-05-23&dzieci=2012-08-22&liczbaPokoi=1&dowolnaLiczbaPokoi=nie&wyzywienia=all-inclusive&wyzywienia=3-posilki&wyzywienia=2-posilki&dlugoscPobytu=*-*&dlugoscPobytu.od=8&dlugoscPobytu.do=&odlegloscLotnisko=*-*&cena=sum&cena.od=&cena.do=&ocenaKlientow=&sortowanie=cena-asc',
-        'https://r.pl/szukaj?wybraneSkad=KTW&wybraneSkad=KRK&typTransportu=AIR&data=2023-05-18&data=2023-06-30&dorosli=1992-01-01&dorosli=1992-01-01&dzieci=2020-05-23&dzieci=2012-08-22&liczbaPokoi=1&dowolnaLiczbaPokoi=nie&wyzywienia=all-inclusive&wyzywienia=3-posilki&wyzywienia=2-posilki&dlugoscPobytu=*-*&dlugoscPobytu.od=8&dlugoscPobytu.do=&odlegloscLotnisko=*-*&cena=sum&cena.od=&cena.do=&ocenaKlientow=&sortowanie=cena-asc']
+    urls = load_urls_from_file()
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
@@ -133,10 +149,22 @@ def scrape_and_load_offers():
             location = trip_div.find("span", class_="r-bloczek-lokalizacja").text.strip()
             days = trip_div.find("div", class_="r-bloczek-wlasciwosc__dni").text.strip()
             price = trip_div.find("div", class_="r-bloczek-cena").text.strip()
-            departure_location_element = trip_div.find("span", class_="r-bloczek-przystanki__info")
-            departure_location = departure_location_element.previous_sibling.strip() if departure_location_element else ""
+            departure_location = trip_div.find("span",
+                                               class_="r-typography r-typography--secondary r-typography--normal r-typography--black r-typography__caption").text.strip()
+            food = trip_div.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
+
+            adults_count, children_count = 0, 0
+            # Extracting the number of adults and children from the URL
+            if "dorosli" in url:
+                adults_count = url.count("dorosli")
+            if "dzieci" in url:
+                children_count = url.count("dzieci")
+
+            # Calculate the formatted persons string
+            persons_formatted = f"{adults_count} adults, {children_count} children"
+
+            # Clean and format the price
             price = re.sub(r'\D', '', price)
-            days = days.split(')')[0].strip().replace("(", "- ")
 
             # Generate trip hash
             trip_hash = hashlib.md5((title + location + days + departure_location).encode('utf-8')).hexdigest()
@@ -150,13 +178,14 @@ def scrape_and_load_offers():
 
                 if int(price) != stored_price:
                     # Update the price and set the previous price as the last price
-                    c.execute('UPDATE trips SET price = ?, last_price = ? WHERE trip_hash = ?',
-                              (int(price), stored_price, trip_hash))
+                    c.execute('UPDATE trips SET price = ?, last_price = ?, food = ?, persons = ? WHERE trip_hash = ?',
+                              (int(price), stored_price, food, persons_formatted, trip_hash))
             else:
                 # Insert the new trip into the database
                 c.execute(
-                    'INSERT INTO trips (title, location, days, price, last_price, departure_location, trip_hash) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                    (title, location, days, int(price), int(price), departure_location, trip_hash))
+                    'INSERT INTO trips (title, location, days, price, last_price, departure_location, food, persons, trip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    (title, location, days, int(price), int(price), departure_location, food, persons_formatted,
+                     trip_hash))
 
     conn.commit()
     conn.close()
@@ -175,4 +204,4 @@ def schedule_scraping():
 schedule_scraping()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
