@@ -35,13 +35,13 @@ https://docs.docker.com/engine/install/
 Build docker image
 
 ```bash
-  docker build -t Holiday_Monitor .
+  docker build -t holiday_monitor .
 ```
 
 Start the docker image
 
 ```bash
-  docker run -p 5001:5001 --name Holiday_Monitor -d Holiday_Monitor
+  docker run -p 5001:5001 --name holiday_monitor -d holiday_monitor
 ```
 
 That's it, application should listen on port 5000 of Docker host IP address.
