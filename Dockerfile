@@ -22,4 +22,4 @@ COPY . .
 EXPOSE 5001
 
 # Define the command to run your Flask application
-CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port 5001"]
+CMD ["python", "-m", "flask", "run", "--host=0.0.0.0", "--port=5001"]
