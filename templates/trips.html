@@ -1,23 +1,49 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Trips</title>
+    <title>Last Minute Trips</title>
     <link rel="icon" href="static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
 </head>
 <body>
 <div class="container">
-    <h1>Trips</h1>
+    <h1>Last Minute Trips</h1>
     <nav>
         <div class="nav-wrapper">
             <ul id="nav-mobile" class="right">
-                <li><a href="/trips">All</a></li>
-                <li><a href="/trips?adults=2&children=0">All 2+0</a></li>
-                <li><a href="/trips?adults=2&children=2">All 2+2</a></li>
                 <li><a href="/logout">Logout</a></li>
             </ul>
         </div>
     </nav>
+
+    <div class="row">
+        <form action="/trips" method="get">
+            <div class="input-field col s12 m6">
+                <select name="country">
+                    <option value="" selected>All countries</option>
+                    <option value="Grecja">Greece</option>
+                    <option value="Czarnogóra">Montenegro</option>
+                    <option value="Chorwacja">Croatia</option>
+                    <option value="Bułgaria">Bulgaria</option>
+                    <option value="Albania">Albania</option>
+                    <option value="Turcja">Turkey</option>
+                </select>
+                <label>Country</label>
+            </div>
+            <div class="input-field col s12 m6">
+                <select name="persons">
+                    <option value="" selected>All person options</option>
+                    <option value="2+0">2 adults, 0 children</option>
+                    <option value="2+2">2 adults, 2 children</option>
+                </select>
+                <label>Persons</label>
+            </div>
+            <div class="input-field col s12">
+                <button class="btn waves-effect waves-light" type="submit">Filter</button>
+            </div>
+        </form>
+    </div>
+
     <table>
         <thead>
         <tr>
@@ -34,7 +60,7 @@
         <tbody>
         {% for trip in trips %}
             <tr>
-                <td>{{ trip[1] }}</td>
+                <td><a href="{{ trip[10] }}" target="_blank">{{ trip[1] }}</a></td>
                 <td>{{ trip[2] }}</td>
                 <td>{{ trip[3] }}</td>
                 <td style="color: {% if trip[4] < trip[5] %}green{% elif trip[4] > trip[5] %}red{% endif %}; font-weight: {% if trip[4] != trip[5] %}bold{% endif %}">{{ trip[4] }}</td>
@@ -47,5 +73,12 @@
         </tbody>
     </table>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('select').formSelect();
+    });
+</script>
 </body>
 </html>

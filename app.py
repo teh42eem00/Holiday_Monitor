@@ -33,7 +33,7 @@ def create_database():
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS trips
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, location TEXT, days TEXT, price INTEGER, last_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, trip_hash TEXT)''')
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, title TEXT, location TEXT, days TEXT, price INTEGER, last_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, trip_hash TEXT, trip_url TEXT)''')
     conn.commit()
     conn.close()
 
@@ -54,22 +54,36 @@ def trips():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
 
-    # Retrieve the number of adults and children from the URL query parameters
-    adults = int(request.args.get('adults', 0))
-    children = int(request.args.get('children', 0))
+    # Retrieve the number of adults, children, and country from the URL query parameters
+    persons = request.args.get('persons')
+    country = request.args.get('country')
 
-    if adults == 2 and children == 0:
-        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 0 children"')
-    elif adults == 2 and children == 2:
-        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 2 children"')
+    if country and persons:
+        # Filter trips by country and persons
+        if persons == '2+0':
+            c.execute(
+                'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 0 children" ORDER BY price ASC',
+                ('%' + country + '%',))
+        elif persons == '2+2':
+            c.execute(
+                'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 2 children" ORDER BY price ASC',
+                ('%' + country + '%',))
+        else:
+            c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
+    elif country:
+        # Filter trips by country
+        c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
+    elif persons == '2+0':
+        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 0 children" ORDER BY price ASC')
+    elif persons == '2+2':
+        c.execute('SELECT * FROM trips WHERE persons = "2 adults, 2 children" ORDER BY price ASC')
     else:
         c.execute('SELECT * FROM trips ORDER BY price ASC')
 
     trips = c.fetchall()
     conn.close()
 
-    return render_template('trips.html', trips=trips, adults=adults, children=children)
-
+    return render_template('trips.html', trips=trips)
 
 
 # Route for user registration
@@ -143,15 +157,17 @@ def scrape_and_load_offers():
         response = requests.get(url)
         soup = BeautifulSoup(response.content, 'html.parser')
 
-        trip_divs = soup.findAll("div", class_="r-card__body")
-        for trip_div in trip_divs:
-            title = trip_div.find("span", class_="r-bloczek-tytul").text.strip()
-            location = trip_div.find("span", class_="r-bloczek-lokalizacja").text.strip()
-            days = trip_div.find("div", class_="r-bloczek-wlasciwosc__dni").text.strip()
-            price = trip_div.find("div", class_="r-bloczek-cena").text.strip()
-            departure_location = trip_div.find("span",
-                                               class_="r-typography r-typography--secondary r-typography--normal r-typography--black r-typography__caption").text.strip()
-            food = trip_div.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
+        trips = soup.findAll("a", class_="n-bloczek szukaj-bloczki__element")
+        for trip in trips:
+            title = trip.find("span", class_="r-bloczek-tytul").text.strip()
+            location = trip.find("span", class_="r-bloczek-lokalizacja").text.strip()
+            days = trip.find("div", class_="r-bloczek-wlasciwosc__dni").text.strip().split(')')[0].strip().replace("(",
+                                                                                                                   "- ")
+            price = trip.find("div", class_="r-bloczek-cena").text.strip()
+            departure_location = trip.find("div", class_="r-bloczek-wlasciwosc__dni").find_next('div',
+                                                                                                class_='r-bloczek-wlasciwosc').text.strip()
+            food = trip.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
+            trip_url = "https://r.pl" + trip['href']
 
             adults_count, children_count = 0, 0
             # Extracting the number of adults and children from the URL
@@ -167,7 +183,8 @@ def scrape_and_load_offers():
             price = re.sub(r'\D', '', price)
 
             # Generate trip hash
-            trip_hash = hashlib.md5((title + location + days + departure_location + food + persons_formatted).encode('utf-8')).hexdigest()
+            trip_hash = hashlib.md5(
+                (title + location + days + departure_location + food + persons_formatted).encode('utf-8')).hexdigest()
 
             # Check if trip already exists in the database
             c.execute('SELECT price FROM trips WHERE trip_hash = ?', (trip_hash,))
@@ -183,9 +200,9 @@ def scrape_and_load_offers():
             else:
                 # Insert the new trip into the database
                 c.execute(
-                    'INSERT INTO trips (title, location, days, price, last_price, departure_location, food, persons, trip_hash) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                    'INSERT INTO trips (title, location, days, price, last_price, departure_location, food, persons, trip_hash, trip_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                     (title, location, days, int(price), int(price), departure_location, food, persons_formatted,
-                     trip_hash))
+                     trip_hash, trip_url))
 
     conn.commit()
     conn.close()
