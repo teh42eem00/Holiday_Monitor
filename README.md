@@ -28,6 +28,8 @@ Go to the project directory
   cd Holiday_Monitor
 ```
 
+Create static/secrets.txt file containing email in first line and password in the second one
+
 Install docker according to your operating system
 
 https://docs.docker.com/engine/install/

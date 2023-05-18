@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subscribe for Trip Alerts</title>
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Subscribe for Trip Alerts</h1>
+    <form action="/subscribe" method="POST">
+        <div class="input-field">
+            <input type="email" id="email" name="email" required>
+            <label for="email">Email Address</label>
+        </div>
+        <div class="input-field">
+            <input type="number" id="price" name="price" required>
+            <label for="price">Desired Price</label>
+        </div>
+        <button class="btn waves-effect waves-light" type="submit">Subscribe</button>
+    </form>
+
+    <h1>Unsubscribe from Trip Alerts</h1>
+    <form action="/unsubscribe" method="POST">
+        <div class="input-field">
+            <input type="email" id="unsubscribe-email" name="email" required>
+            <label for="unsubscribe-email">Email Address</label>
+        </div>
+        <button class="btn waves-effect waves-light" type="submit">Unsubscribe</button>
+    </form>
+</div>
+</body>
+</html>
