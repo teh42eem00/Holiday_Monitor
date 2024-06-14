@@ -35,7 +35,7 @@ def scrape_and_load_offers():
                                                                                                                        "- ")
                 price = trip.find("div", class_="r-bloczek-cena").text.strip()
                 departure_location = trip.find("div", class_="r-bloczek-wlasciwosci__dni").find_next('div',
-                                                                                                    class_='r-bloczek-wlasciwosc').text.strip()
+                                                                                                    class_='r-bloczek-wlasciwosci__wlasciwosc').text.strip()
                 food = trip.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
                 trip_url = "https://r.pl" + trip['href']
 
