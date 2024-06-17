@@ -55,6 +55,17 @@ def trips():
     trips = c.fetchall()
     return render_template('trips.html', trips=trips)
 
+# Route to empty trips db
+@app.route('/empty-trips', methods=['GET', 'POST'])
+@login_required
+def empty_trips():
+    if request.method == 'GET':
+        with sqlite3.connect(DATABASE) as conn:
+            conn.execute('DELETE FROM trips')
+
+        return redirect(url_for('trips'))
+
+    return redirect(url_for('index'))
 
 # Route for user registration
 @app.route('/register', methods=['GET', 'POST'])
