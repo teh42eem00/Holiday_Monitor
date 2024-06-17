@@ -20,8 +20,8 @@ def scrape_and_load_offers():
         subscriptions = c.fetchall()
 
         # Retrieve the existing trip hashes from the database
-        c.execute('SELECT trip_hash FROM trips')
-        hashes_to_remove = [row[0] for row in c.fetchall()]
+        # c.execute('SELECT trip_hash FROM trips')
+        # hashes_to_remove = [row[0] for row in c.fetchall()]
 
         for url in urls:
             response = requests.get(url)
@@ -33,7 +33,7 @@ def scrape_and_load_offers():
                 location = trip.find("span", class_="r-bloczek-lokalizacja").text.strip()
                 days = trip.find("div", class_="r-bloczek-wlasciwosci__dni").text.strip().split(')')[0].strip().replace("(",
                                                                                                                        "- ")
-                price = trip.find("div", class_="r-bloczek-cena").text.strip()
+                price = trip.find("span", class_="r-bloczek-cena__aktualna").text.strip()
                 departure_location = trip.find("div", class_="r-bloczek-wlasciwosci__dni").find_next('div',
                                                                                                     class_='r-bloczek-wlasciwosci__wlasciwosc').text.strip()
                 food = trip.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
@@ -62,11 +62,11 @@ def scrape_and_load_offers():
 
                 if row:
                     stored_price = row[0]
-                    hashes_to_remove.remove(trip_hash)
+                    # hashes_to_remove.remove(trip_hash)
                     if int(price) != stored_price:
                         # Update the price and set the previous price as the last price
                         c.execute('UPDATE trips SET price = ?, last_price = ?, food = ?, persons = ? WHERE trip_hash = ?',
-                                  (int(price), stored_price, food, persons_formatted, trip_hash))
+                                  (int(price), int(stored_price), food, persons_formatted, trip_hash))
                 else:
                     # Insert the new trip into the database
                     c.execute(
