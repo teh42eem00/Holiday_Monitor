@@ -37,8 +37,13 @@ def scrape_and_load_offers():
                 departure_location = trip.find("div", class_="r-bloczek-wlasciwosci__dni").find_next('div',
                                                                                                     class_='r-bloczek-wlasciwosci__wlasciwosc').text.strip()
                 food = trip.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
-                trip_url = "https://r.pl" + trip['href']
 
+                href = trip['href']
+                if not href.startswith("http"):
+                    trip_url = "https://r.pl" + href
+                else:
+                    trip_url = href
+                    
                 adults_count, children_count = 0, 0
                 # Extracting the number of adults and children from the URL
                 if "dorosli" in url:
