@@ -5,7 +5,7 @@ FROM python:3.12-slim
 WORKDIR /app
 
 # Install build dependencies
-RUN apt update && apt install -y build-essential
+RUN apt update -y && apt upgrade -y && apt install -y build-essential
 
 # Copy the requirements.txt file to the container
 COPY requirements.txt .
