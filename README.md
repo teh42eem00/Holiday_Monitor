@@ -6,7 +6,7 @@ This is an application used to monitor holiday price changes.
 
 Project is created with:
 
-- Python 3.11
+- Python 3.12
 - Flask 2.3.2
 - bcrypt, requests, beautifulsoup4, APScheduler
 - Docker
