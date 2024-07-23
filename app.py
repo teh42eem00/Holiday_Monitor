@@ -53,6 +53,13 @@ def trips():
             c.execute('SELECT * FROM trips ORDER BY price ASC')
 
     trips = c.fetchall()
+
+    for i in range(len(trips)):
+        trip_hash = trips[i][9]
+        c.execute('SELECT date, price FROM price_history WHERE trip_hash = ?', (trip_hash,))
+        price_history = c.fetchall()
+        trips[i] = list(trips[i]) + [price_history]
+
     return render_template('trips.html', trips=trips)
 
 # Route to empty trips db
