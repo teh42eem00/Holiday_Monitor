@@ -5,6 +5,12 @@
     <link rel="icon" href="static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            position: relative;
+            height: 200px; /* Adjust as needed */
+        }
+    </style>
 </head>
 <body>
 <div class="container">
@@ -65,25 +71,27 @@
         <tbody>
         {% for trip in trips %}
             <tr>
-                <td><a href="{{ trip[10] }}" target="_blank">{{ trip[1] }}</a></td>
-                <td>{{ trip[2] }}</td>
-                <td>{{ trip[3] }}</td>
-                <td style="color: {% if trip[4] < trip[5] %}green{% elif trip[4] > trip[5] %}red{% endif %}; font-weight: {% if trip[4] != trip[5] %}bold{% endif %}">{{ trip[4] }}</td>
-                <td>{{ trip[5] }}</td>
-                <td>{{ trip[6] }}</td>
-                <td>{{ trip[7] }}</td>
-                <td>{{ trip[8] }}</td>
+                <td><a href="{{ trip.trip_url }}" target="_blank">{{ trip.title }}</a></td>
+                <td>{{ trip.location }}</td>
+                <td>{{ trip.days }}</td>
+                <td style="color: {% if trip.price < trip.last_price %}green{% elif trip.price > trip.last_price %}red{% endif %}; font-weight: {% if trip.price != trip.last_price %}bold{% endif %}">{{ trip.price }}</td>
+                <td>{{ trip.last_price }}</td>
+                <td>{{ trip.departure_location }}</td>
+                <td>{{ trip.food }}</td>
+                <td>{{ trip.persons }}</td>
                 <td>
-                    <canvas id="chart-{{ trip[0] }}" width="400" height="400"></canvas>
+                    <div class="chart-container">
+                        <canvas id="chart-{{ trip.id }}"></canvas>
+                    </div>
                     <script>
-                        var ctx = document.getElementById('chart-{{ trip[0] }}').getContext('2d');
-                        var chart = new Chart(ctx, {
+                        var ctx = document.getElementById('chart-{{ trip.id }}').getContext('2d');
+                        new Chart(ctx, {
                             type: 'line',
                             data: {
-                                labels: [{% for point in trip[11] %}"{{ point.date }}",{% endfor %}],
+                                labels: [{% for point in trip.price_history %}"{{ point[0] }}",{% endfor %}],
                                 datasets: [{
                                     label: 'Price History',
-                                    data: [{% for point in trip[11] %}{{ point.price }},{% endfor %}],
+                                    data: [{% for point in trip.price_history %}{{ point[1] }},{% endfor %}],
                                     borderColor: 'rgba(75, 192, 192, 1)',
                                     borderWidth: 1,
                                     fill: false
