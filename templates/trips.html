@@ -4,7 +4,6 @@
     <title>Last Minute Trips</title>
     <link rel="icon" href="static/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="container">
@@ -59,7 +58,6 @@
             <th>Departure Location</th>
             <th>Food</th>
             <th>Persons</th>
-            <th>Price History</th>
         </tr>
         </thead>
         <tbody>
@@ -73,38 +71,6 @@
                 <td>{{ trip[6] }}</td>
                 <td>{{ trip[7] }}</td>
                 <td>{{ trip[8] }}</td>
-                <td>
-                    <canvas id="chart-{{ trip[0] }}" width="400" height="400"></canvas>
-                    <script>
-                        var ctx = document.getElementById('chart-{{ trip[0] }}').getContext('2d');
-                        var chart = new Chart(ctx, {
-                            type: 'line',
-                            data: {
-                                labels: [{% for point in trip[11] %}"{{ point.date }}",{% endfor %}],
-                                datasets: [{
-                                    label: 'Price History',
-                                    data: [{% for point in trip[11] %}{{ point.price }},{% endfor %}],
-                                    borderColor: 'rgba(75, 192, 192, 1)',
-                                    borderWidth: 1,
-                                    fill: false
-                                }]
-                            },
-                            options: {
-                                scales: {
-                                    x: {
-                                        type: 'time',
-                                        time: {
-                                            unit: 'day'
-                                        }
-                                    },
-                                    y: {
-                                        beginAtZero: false
-                                    }
-                                }
-                            }
-                        });
-                    </script>
-                </td>
             </tr>
         {% endfor %}
         </tbody>
