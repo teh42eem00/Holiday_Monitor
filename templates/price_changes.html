@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Price Changes</title>
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Price Changes</h1>
+    <nav>
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li><a href="/trips">Home</a></li>
+                <li><a href="/subscribe">Subscribe</a></li>
+                <li><a href="/price-changes">Price Changes</a></li>
+                <li><a href="/empty-trips">Empty Trips</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Hotel name</th>
+            <th>Location</th>
+            <th>Date</th>
+            <th>Current Price</th>
+            <th>Previous Price</th>
+            <th>Departure Location</th>
+            <th>Food</th>
+            <th>Persons</th>
+            <th>Change Date</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for change in price_changes %}
+            <tr>
+                <td>{{ change[0] }}</td>
+                <td>{{ change[1] }}</td>
+                <td>{{ change[2] }}</td>
+                <td>{{ change[3] }}</td>
+                <td>{{ change[4] }}</td>
+                <td>{{ change[5] }}</td>
+                <td>{{ change[6] }}</td>
+                <td>{{ change[7] }}</td>
+                <td>{{ change[8] }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script
