@@ -15,6 +15,8 @@ def create_database():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, desired_price INTEGER)''')
     c.execute('''CREATE TABLE IF NOT EXISTS subscription_trips
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, subscription_email TEXT, trip_hash TEXT, trip_price INTEGER)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS price_changes
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, title TEXT, location TEXT, date TEXT, current_price INTEGER, previous_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, change_date TEXT)''')
     conn.commit()
     conn.close()
 
