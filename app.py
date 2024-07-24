@@ -18,6 +18,14 @@ schedule_scraping()
 def index():
     return render_template('index.html')
 
+@app.route('/price-changes')
+def price_changes():
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    c.execute('SELECT title, location, date, current_price, previous_price, departure_location, food, persons, change_date FROM price_changes ORDER BY change_date DESC')
+    price_changes = c.fetchall()
+    conn.close()
+    return render_template('price_changes.html', price_changes=price_changes)
 
 # Route for displaying trips
 @app.route('/trips')
