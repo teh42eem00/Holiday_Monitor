@@ -23,44 +23,43 @@ def index():
 @app.route('/trips')
 @login_required
 def trips():
-    # Retrieve the number of adults, children, and country from the URL query parameters
-    persons = request.args.get('persons')
-    country = request.args.get('country')
+    conn = sqlite3.connect(DATABASE)
+    c = conn.cursor()
+    country = request.args.get('country', '')
+    persons = request.args.get('persons', '')
 
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
+    query = 'SELECT * FROM trips WHERE 1=1'
+    if country:
+        query += f' AND location = "{country}"'
+    if persons:
+        query += f' AND persons = "{persons}"'
 
-        if country and persons:
-            # Filter trips by country and persons
-            if persons == '2+0':
-                c.execute(
-                    'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 0 children" ORDER BY price ASC',
-                    ('%' + country + '%',))
-            elif persons == '2+2':
-                c.execute(
-                    'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 2 children" ORDER BY price ASC',
-                    ('%' + country + '%',))
-            else:
-                c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
-        elif country:
-            # Filter trips by country
-            c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
-        elif persons == '2+0':
-            c.execute('SELECT * FROM trips WHERE persons = "2 adults, 0 children" ORDER BY price ASC')
-        elif persons == '2+2':
-            c.execute('SELECT * FROM trips WHERE persons = "2 adults, 2 children" ORDER BY price ASC')
-        else:
-            c.execute('SELECT * FROM trips ORDER BY price ASC')
-
+    c.execute(query)
     trips = c.fetchall()
 
-    for i in range(len(trips)):
-        trip_hash = trips[i][9]
-        c.execute('SELECT date, price FROM price_history WHERE trip_hash = ?', (trip_hash,))
+    trip_data = []
+    for trip in trips:
+        trip_id = trip[0]
+        trip_hash = trip[9]
+        c.execute('SELECT date, price FROM price_history WHERE trip_hash = ? ORDER BY date ASC', (trip_hash,))
         price_history = c.fetchall()
-        trips[i] = list(trips[i]) + [price_history]
+        trip_data.append({
+            'id': trip_id,
+            'title': trip[1],
+            'location': trip[2],
+            'days': trip[3],
+            'price': trip[4],
+            'last_price': trip[5],
+            'departure_location': trip[6],
+            'food': trip[7],
+            'persons': trip[8],
+            'trip_hash': trip_hash,
+            'trip_url': trip[10],
+            'price_history': price_history
+        })
 
-    return render_template('trips.html', trips=trips)
+    conn.close()
+    return render_template('trips.html', trips=trip_data)
 
 # Route to empty trips db
 @app.route('/empty-trips', methods=['GET', 'POST'])
