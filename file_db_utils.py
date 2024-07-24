@@ -15,12 +15,10 @@ def create_database():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, desired_price INTEGER)''')
     c.execute('''CREATE TABLE IF NOT EXISTS subscription_trips
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, subscription_email TEXT, trip_hash TEXT, trip_price INTEGER)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS price_history
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, date TIMESTAMP DEFAULT CURRENT_TIMESTAMP, price INTEGER)''')
     conn.commit()
     conn.close()
 
-# Function to load URLs to scrape from file
+# Function to loads urls to scrap from file
 def load_urls_from_file():
     with open("static/urls.txt", "r") as file:
         return [line.strip() for line in file]
