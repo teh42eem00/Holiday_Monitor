@@ -22,4 +22,4 @@ def create_database():
 
 def load_urls_from_file():
     with open("static/urls.txt", "r") as file:
-        return [line.strip() for line]
+        return [line.strip() for line in file]
