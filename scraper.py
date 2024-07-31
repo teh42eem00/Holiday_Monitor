@@ -30,6 +30,10 @@ def scrape_and_load_offers():
                 price = trip.find("span", class_="r-bloczek-cena__aktualna").text.strip()
                 departure_location = trip.find("div", class_="r-bloczek-wlasciwosci__dni").find_next('div', class_='r-bloczek-wlasciwosci__wlasciwosc').text.strip()
                 food = trip.find("span", class_="r-bloczek-wyzywienie__nazwa").text.strip()
+                
+                # Extract review score
+                review_score_tag = trip.find("span", class_="r-typography--bold")
+                review_score = review_score_tag.text.strip() if review_score_tag else "N/A"
 
                 href = trip['href']
                 if not href.startswith("http"):
@@ -54,15 +58,15 @@ def scrape_and_load_offers():
                 if row:
                     stored_price = row[0]
                     if int(price) != stored_price:
-                        c.execute('UPDATE trips SET price = ?, last_price = ?, food = ?, persons = ? WHERE trip_hash = ?',
-                                  (int(price), int(stored_price), food, persons_formatted, trip_hash))
+                        c.execute('UPDATE trips SET price = ?, last_price = ?, food = ?, persons = ?, review_score = ? WHERE trip_hash = ?',
+                                  (int(price), int(stored_price), food, persons_formatted, review_score, trip_hash))
                         c.execute('INSERT INTO price_changes (trip_hash, title, location, date, current_price, previous_price, departure_location, food, persons, change_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                   (trip_hash, title, location, days, int(price), int(stored_price), departure_location, food, persons_formatted, datetime.now()))
 
                 else:
                     c.execute(
-                        'INSERT INTO trips (title, location, days, price, last_price, departure_location, food, persons, trip_hash, trip_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                        (title, location, days, int(price), int(price), departure_location, food, persons_formatted, trip_hash, trip_url))
+                        'INSERT INTO trips (title, location, days, price, last_price, departure_location, food, persons, review_score, trip_hash, trip_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                        (title, location, days, int(price), int(price), departure_location, food, persons_formatted, review_score, trip_hash, trip_url))
 
                 for subscription in subscriptions:
                     email = subscription[1]
