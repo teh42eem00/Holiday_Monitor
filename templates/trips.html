@@ -59,12 +59,13 @@
             <th>Departure Location</th>
             <th>Food</th>
             <th>Persons</th>
+            <th>Review Score</th>
         </tr>
         </thead>
         <tbody>
         {% for trip in trips %}
             <tr>
-                <td><a href="{{ trip[10] }}" target="_blank">{{ trip[1] }}</a></td>
+                <td><a href="{{ trip[11] }}" target="_blank">{{ trip[1] }}</a></td>
                 <td>{{ trip[2] }}</td>
                 <td>{{ trip[3] }}</td>
                 <td style="color: {% if trip[4] < trip[5] %}green{% elif trip[4] > trip[5] %}red{% endif %}; font-weight: {% if trip[4] != trip[5] %}bold{% endif %}">{{ trip[4] }}</td>
@@ -72,6 +73,7 @@
                 <td>{{ trip[6] }}</td>
                 <td>{{ trip[7] }}</td>
                 <td>{{ trip[8] }}</td>
+                <td>{{ trip[9] }}</td>
             </tr>
         {% endfor %}
         </tbody>
