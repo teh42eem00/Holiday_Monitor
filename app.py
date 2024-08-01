@@ -18,6 +18,25 @@ schedule_scraping()
 def index():
     return render_template('index.html')
 
+@app.route('/charters')
+@login_required
+def charters():
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('SELECT * FROM charters ORDER BY date DESC')
+        charters = c.fetchall()
+    return render_template('charters.html', charters=charters)
+
+@app.route('/charter-changes')
+@login_required
+def charter_changes():
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute('SELECT trip_hash, date, price FROM charter_price_history ORDER BY date DESC')
+        charter_changes = c.fetchall()
+    return render_template('charter_changes.html', charter_changes=charter_changes)
+
+
 @app.route('/price-changes')
 def price_changes():
     conn = sqlite3.connect(DATABASE)
