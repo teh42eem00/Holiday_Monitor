@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charter Price Changes</title>
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Charter Price Changes</h1>
+    <nav>
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li><a href="/trips">Home</a></li>
+                <li><a href="/subscribe">Subscribe</a></li>
+                <li><a href="/price-changes">Price Changes</a></li>
+                <li><a href="/charters">Charters</a></li>
+                <li><a href="/charter-changes">Charter Changes</a></li>
+                <li><a href="/empty-trips">Empty Trips</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Flight Hash</th>
+                <th>Date</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for change in charter_changes %}
+            <tr>
+                <td>{{ change[0] }}</td>
+                <td>{{ change[1] }}</td>
+                <td>{{ change[2] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script
