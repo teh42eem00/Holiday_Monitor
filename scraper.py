@@ -86,6 +86,46 @@ def scrape_and_load_offers():
 
     print("Scraping completed!")
 
+def scrape_and_load_charters():
+    print("Starting charter scraping...")
+
+    charter_url = 'https://biletyczarterowe.r.pl/szukaj?data=2024-08-18&idPrzylot=198243_319679&idWylot=319696&oneWay=false&pakietIdPrzylot=198243_319679&pakietIdWylot=198243_319696&przylotDo&przylotOd&wiek%5B%5D=1989-10-30&wiek%5B%5D=1989-10-30&wiek%5B%5D=2020-05-23&wiek%5B%5D=2012-08-22&wylotDo=2024-08-19&wylotOd=2024-08-02'  # Zmień ten URL na odpowiedni adres URL
+    response = requests.get(charter_url)
+    soup = BeautifulSoup(response.content, 'html.parser')
+    flights = soup.find_all('a', class_='karta karta')
+    flight_links = [flight['href'] for flight in flights]
+    flights_data = []
+    for flight in flight_links:
+        site = requests.get(charter_url)
+        card = BeautifulSoup(site, 'html.parser')
+        flight_info = {}
+
+        # Znalezienie daty, państwa, miasta i godziny
+        date_div = card.find('div', class_='termin active')
+        if date_div:
+            flight_info['date'] = date_div.get_text(strip=True)
+
+        # Informacje o wylocie
+        departure = card.find_all('div', class_='lot-info__col-side')[0]
+        flight_info['departure_country'] = departure.find('div', class_='panstwo').get_text(strip=True)
+        flight_info['departure_city'] = departure.find('div', class_='miasto').get_text(strip=True)
+        flight_info['departure_time'] = departure.find_all('div', class_='godz tooltip-wrap')[0].get_text(strip=True)
+
+        # Informacje o przylocie
+        arrival = card.find_all('div', class_='lot-info__col-side')[1]
+        flight_info['arrival_country'] = arrival.find('div', class_='panstwo').get_text(strip=True)
+        flight_info['arrival_city'] = arrival.find('div', class_='miasto').get_text(strip=True)
+        flight_info['arrival_time'] = arrival.find_all('div', class_='godz tooltip-wrap')[0].get_text(strip=True)
+
+        # Cena
+        price_div = card.find('div', class_='karta-lotu__cena')
+        if price_div:
+            flight_info['price'] = price_div.get_text(strip=True)
+
+        flights_data.append(flight_info)
+    print(flights_data)
+    
+
 
 def schedule_scraping():
     print("Scraping scheduled...")
