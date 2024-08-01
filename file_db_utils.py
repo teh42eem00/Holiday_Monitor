@@ -18,7 +18,7 @@ def create_database():
     c.execute('''CREATE TABLE IF NOT EXISTS price_changes
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, title TEXT, location TEXT, date TEXT, current_price INTEGER, previous_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, change_date TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS charters
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, date TEXT, departure_country TEXT, departure_city TEXT, departure_time TEXT, arrival_country TEXT, arrival_city TEXT, arrival_time TEXT, price INTEGER)''')
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, date TEXT, departure_country TEXT, departure_city TEXT, departure_time TEXT, arrival_country TEXT, arrival_city TEXT, arrival_time TEXT, price INTEGER, last_price INTEGER, flight_url TEXT)''')
     conn.commit()
     conn.close()
 
