@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Charters</title>
+    <link rel="icon" href="static/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+</head>
+<body>
+<div class="container">
+    <h1>Charters</h1>
+    <nav>
+        <div class="nav-wrapper">
+            <ul id="nav-mobile" class="right">
+                <li><a href="/trips">Home</a></li>
+                <li><a href="/subscribe">Subscribe</a></li>
+                <li><a href="/price-changes">Price Changes</a></li>
+                <li><a href="/charters">Charters</a></li>
+                <li><a href="/charter-changes">Charter Changes</a></li>
+                <li><a href="/empty-trips">Empty Trips</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <table>
+        <thead>
+        <tr>
+                <th>Date</th>
+                <th>Departure Country</th>
+                <th>Departure City</th>
+                <th>Departure Time</th>
+                <th>Arrival Country</th>
+                <th>Arrival City</th>
+                <th>Arrival Time</th>
+                <th>Flight URL</th>
+                <th>Last Price</th>
+        </tr>
+        </thead>
+        <tbody>
+            {% for charter in charters %}
+            <tr>
+                <td>{{ charter[2] }}</td>
+                <td>{{ charter[3] }}</td>
+                <td>{{ charter[4] }}</td>
+                <td>{{ charter[5] }}</td>
+                <td>{{ charter[6] }}</td>
+                <td>{{ charter[7] }}</td>
+                <td>{{ charter[8] }}</td>
+                <td><a href="{{ charter[9] }}">View Flight</a></td>
+                <td>{{ charter[10] }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script
