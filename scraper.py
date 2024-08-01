@@ -99,7 +99,7 @@ def scrape_and_load_charters():
         page.goto(charter_url)
 
         # Czekaj na załadowanie treści
-        page.wait_for_load_state('networkidle')
+        page.wait_for_selector('a.karta.karta')  # Czekać, aż pojawią się linki do lotów
 
         # Pobierz treść strony
         content = page.content()
@@ -192,7 +192,7 @@ def schedule_scraping():
     print("Scraping scheduled...")
     scheduler = BackgroundScheduler(daemon=True)
     scheduler.add_job(scrape_and_load_offers, trigger=IntervalTrigger(minutes=1))
-    scheduler.add_job(scrape_and_load_charters, trigger=IntervalTrigger(minutes=2))
+    scheduler.add_job(scrape_and_load_charters, trigger=IntervalTrigger(minutes=1))
     scheduler.start()
 
 if __name__ == "__main__":
