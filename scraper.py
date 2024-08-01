@@ -159,28 +159,23 @@ def scrape_and_load_charters():
                     flight_string = f"{date} {departure_country} {departure_city} {departure_time} {arrival_country} {arrival_city} {arrival_time}"
                     flight_hash = hashlib.md5(flight_string.encode('utf-8')).hexdigest()
 
-                    # Sprawdzamy, czy lot już istnieje
-                    c.execute('SELECT * FROM charters WHERE trip_hash = ?', (flight_hash,))
+                     # Sprawdzamy, czy lot już istnieje
+                    c.execute('SELECT price FROM charters WHERE trip_hash = ?', (flight_hash,))
                     row = c.fetchone()
 
                     if row:
-                        # Aktualizacja rekordu w tabeli `charters`
-                        c.execute('UPDATE charters SET date = ?, departure_country = ?, departure_city = ?, departure_time = ?, arrival_country = ?, arrival_city = ?, arrival_time = ?, flight_url = ?, last_price = ? WHERE trip_hash = ?',
-                                  (date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, price, flight_hash))
-
-                        # Aktualizacja historii cen
-                        c.execute('SELECT price FROM charter_price_history WHERE trip_hash = ? ORDER BY date DESC LIMIT 1', (flight_hash,))
-                        history_row = c.fetchone()
-
-                        if history_row and history_row[0] != price:
-                            # Dodajemy nową cenę do tabeli `charter_price_history`
+                        # Jeśli lot istnieje, aktualizuj rekord, jeśli cena się zmieniła
+                        stored_price = row[0]
+                        if price is not None and price != stored_price:
+                            c.execute('UPDATE charters SET price = ?, last_price = ? WHERE trip_hash = ?',
+                                      (price, stored_price, flight_hash))
                             c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
                                       (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
                     else:
                         # Dodanie nowego rekordu do tabeli `charters`
-                        c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url, last_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                                  (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, price))
-
+                        c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url, price, last_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                  (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, price, price))
+                        
                         # Dodajemy nową cenę do tabeli `charter_price_history`
                         if price is not None:
                             c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
@@ -191,8 +186,8 @@ def scrape_and_load_charters():
 def schedule_scraping():
     print("Scraping scheduled...")
     scheduler = BackgroundScheduler(daemon=True)
-    scheduler.add_job(scrape_and_load_offers, trigger=IntervalTrigger(minutes=5))
-    scheduler.add_job(scrape_and_load_charters, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(scrape_and_load_offers, trigger=IntervalTrigger(minutes=1))
+    scheduler.add_job(scrape_and_load_charters, trigger=IntervalTrigger(minutes=2))
     scheduler.start()
 
 if __name__ == "__main__":
