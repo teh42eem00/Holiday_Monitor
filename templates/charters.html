@@ -22,36 +22,39 @@
         </div>
     </nav>
 
-    <table>
-        <thead>
+<table>
+    <thead>
         <tr>
-                <th>Date</th>
-                <th>Departure Country</th>
-                <th>Departure City</th>
-                <th>Departure Time</th>
-                <th>Arrival Country</th>
-                <th>Arrival City</th>
-                <th>Arrival Time</th>
-                <th>Flight URL</th>
-                <th>Last Price</th>
+            <th>Date</th>
+            <th>Price</th>
+            <th>Last Price</th>
+            <th>Departure Country</th>
+            <th>Departure City</th>
+            <th>Departure Time</th>
+            <th>Arrival Country</th>
+            <th>Arrival City</th>
+            <th>Arrival Time</th>
+            <th>Flight URL</th>
         </tr>
-        </thead>
-        <tbody>
-            {% for charter in charters %}
-            <tr>
-                <td>{{ charter[2] }}</td>
-                <td>{{ charter[3] }}</td>
-                <td>{{ charter[4] }}</td>
-                <td>{{ charter[5] }}</td>
-                <td>{{ charter[6] }}</td>
-                <td>{{ charter[7] }}</td>
-                <td>{{ charter[8] }}</td>
-                <td><a href="{{ charter[9] }}">View Flight</a></td>
-                <td>{{ charter[10] }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    </thead>
+    <tbody>
+        {% for charter in charters %}
+        <tr>
+            <td>{{ charter[2] }}</td>
+            <td>{{ charter[3] }}</td>
+            <td>{{ charter[4] }}</td>
+            <td>{{ charter[5] }}</td>
+            <td>{{ charter[6] }}</td>
+            <td>{{ charter[7] }}</td>
+            <td>{{ charter[8] }}</td>
+            <td>{{ charter[9] }}</td>
+            <td>{{ charter[10] }}</td>
+            <td><a href="{{ charter[11] }}">View Flight</a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
 </div>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script
