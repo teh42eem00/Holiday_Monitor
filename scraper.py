@@ -136,7 +136,8 @@ def scrape_and_load_charters():
                 for flight_info in flight_infos:
                     # Znalezienie daty
                     date_div = flight_info.find('div', class_='termin active')
-                    date = date_div.get_text(strip=True) if date_div else ""
+                    date_header = date_div.find('div', class_='termin__header')
+                    date = date_header.get_text(strip=True) if date_header else ""
                     
                     # Informacje o wylocie
                     departure_info = flight_info.find('div', class_='lot-info__col-side')
