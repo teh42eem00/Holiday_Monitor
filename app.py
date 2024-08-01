@@ -46,7 +46,7 @@ def charter_changes():
         ch.arrival_time,
         cph.date AS change_date,
         cph.price AS new_price,
-        cph.last_price
+        ch.last_price AS previous_price
     FROM
         charter_price_history cph
     JOIN
