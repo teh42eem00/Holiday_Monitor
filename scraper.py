@@ -145,7 +145,7 @@ def scrape_and_load_charters():
                     departure_time = departure_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
 
                     # Informacje o przylocie
-                    arrival_info = flight_info.find_all('div', class_='lot-info__col-side')[1]
+                    arrival_info = flight_info.find_all('div', class_='lot-info__col-side right')[1]
                     arrival_country = arrival_info.find('div', class_='panstwo').get_text(strip=True)
                     arrival_city = arrival_info.find('div', class_='miasto').get_text(strip=True)
                     arrival_time = arrival_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
