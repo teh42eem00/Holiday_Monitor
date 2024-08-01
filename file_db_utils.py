@@ -13,8 +13,8 @@ def create_database():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, desired_price INTEGER)''')
     c.execute('''CREATE TABLE IF NOT EXISTS subscription_trips
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, subscription_email TEXT, trip_hash TEXT, trip_price INTEGER)''')
-    c.execute('''CREATE TABLE IF NOT EXISTS price_history
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, date TEXT, price INTEGER)''')
+    c.execute('''CREATE TABLE IF NOT EXISTS price_changes
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, title TEXT, location TEXT, date TEXT, current_price INTEGER, previous_price INTEGER, departure_location TEXT, food TEXT, persons TEXT, change_date TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS charters
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, trip_hash TEXT, date TEXT, departure_country TEXT, departure_city TEXT, departure_time TEXT, arrival_country TEXT, arrival_city TEXT, arrival_time TEXT, flight_url TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS charter_price_history
