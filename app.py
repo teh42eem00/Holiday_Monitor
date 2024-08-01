@@ -30,11 +30,38 @@ def charters():
 @app.route('/charter-changes')
 @login_required
 def charter_changes():
-    with sqlite3.connect(DATABASE) as conn:
-        c = conn.cursor()
-        c.execute('SELECT trip_hash, date, price FROM charter_price_history ORDER BY date DESC')
-        charter_changes = c.fetchall()
-    return render_template('charter_changes.html', charter_changes=charter_changes)
+    conn = sqlite3.connect(DATABASE)
+    cursor = conn.cursor()
+    
+    # Zapytanie SQL łączące tabelę `charters` z `charter_price_history`
+    query = """
+    SELECT
+        ch.trip_hash,
+        ch.date AS flight_date,
+        ch.departure_country,
+        ch.departure_city,
+        ch.departure_time,
+        ch.arrival_country,
+        ch.arrival_city,
+        ch.arrival_time,
+        cph.date AS change_date,
+        cph.price AS new_price,
+        cph.previous_price
+    FROM
+        charter_price_history cph
+    JOIN
+        charters ch
+    ON
+        cph.trip_hash = ch.trip_hash
+    ORDER BY
+        cph.date DESC;
+    """
+    
+    cursor.execute(query)
+    changes = cursor.fetchall()
+    conn.close()
+    
+    return render_template('charter_changes.html', changes=changes)
 
 
 @app.route('/price-changes')
