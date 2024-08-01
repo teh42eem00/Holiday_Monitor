@@ -165,8 +165,8 @@ def scrape_and_load_charters():
 
                     if row:
                         # Aktualizacja rekordu w tabeli `charters`
-                        c.execute('UPDATE charters SET date = ?, departure_country = ?, departure_city = ?, departure_time = ?, arrival_country = ?, arrival_city = ?, arrival_time = ?, flight_url = ? WHERE trip_hash = ?',
-                                  (date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, flight_hash))
+                        c.execute('UPDATE charters SET date = ?, departure_country = ?, departure_city = ?, departure_time = ?, arrival_country = ?, arrival_city = ?, arrival_time = ?, flight_url = ?, last_price = ? WHERE trip_hash = ?',
+                                  (date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, price, flight_hash))
 
                         # Aktualizacja historii cen
                         c.execute('SELECT price FROM charter_price_history WHERE trip_hash = ? ORDER BY date DESC LIMIT 1', (flight_hash,))
@@ -178,8 +178,8 @@ def scrape_and_load_charters():
                                       (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
                     else:
                         # Dodanie nowego rekordu do tabeli `charters`
-                        c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                                  (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link))
+                        c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url, last_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                  (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, price))
 
                         # Dodajemy nową cenę do tabeli `charter_price_history`
                         if price is not None:
