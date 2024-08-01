@@ -122,7 +122,7 @@ def scrape_and_load_charters():
                     page.goto(flight_link)
 
                     # Czekaj na załadowanie treści
-                    page.wait_for_load_state('networkidle')
+                    page.wait_for_selector('div.bilety')
 
                     # Pobierz treść strony
                     content = page.content()
