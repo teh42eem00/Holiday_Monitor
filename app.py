@@ -21,11 +21,21 @@ def index():
 @app.route('/charters')
 @login_required
 def charters():
+    sort_by = request.args.get('sort_by', 'date')  # Domyślnie sortuj po dacie
+    sort_order = request.args.get('sort_order', 'DESC')  # Domyślnie sortuj malejąco
+
+    valid_columns = ['date', 'price', 'last_price', 'departure_country', 'departure_city', 'departure_time', 'arrival_country', 'arrival_city', 'arrival_time']
+    if sort_by not in valid_columns:
+        sort_by = 'date'
+    if sort_order not in ['ASC', 'DESC']:
+        sort_order = 'DESC'
+
+    query = f'SELECT * FROM charters ORDER BY {sort_by} {sort_order}'
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
-        c.execute('SELECT * FROM charters ORDER BY date DESC')
+        c.execute(query)
         charters = c.fetchall()
-    return render_template('charters.html', charters=charters)
+    return render_template('charters.html', charters=charters, sort_by=sort_by, sort_order=sort_order)
 
 @app.route('/charter-changes')
 @login_required
