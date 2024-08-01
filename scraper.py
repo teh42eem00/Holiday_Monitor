@@ -8,6 +8,8 @@ from file_db_utils import load_urls_from_file, DATABASE
 import hashlib
 import re
 from datetime import datetime
+from playwright.sync_api import sync_playwright
+from urllib.parse import urljoin
 
 def scrape_and_load_offers():
     print("Starting scraping...")
@@ -90,73 +92,101 @@ def scrape_and_load_charters():
     print("Starting charter scraping...")
 
     charter_url = 'https://biletyczarterowe.r.pl/szukaj?data=2024-08-18&idPrzylot=198243_319679&idWylot=319696&oneWay=false&pakietIdPrzylot=198243_319679&pakietIdWylot=198243_319696&przylotDo&przylotOd&wiek%5B%5D=1989-10-30&wiek%5B%5D=1989-10-30&wiek%5B%5D=2020-05-23&wiek%5B%5D=2012-08-22&wylotDo=2024-08-19&wylotOd=2024-08-02'
-    response = requests.get(charter_url)
-    soup = BeautifulSoup(response.content, 'html.parser')
-    flights = soup.find_all('a', class_='karta karta')
+
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page()
+        page.goto(charter_url)
+
+        # Czekaj na załadowanie treści
+        page.wait_for_load_state('networkidle')
+
+        # Pobierz treść strony
+        content = page.content()
+        browser.close()
+
+    soup = BeautifulSoup(content, 'html.parser')
+    flights = soup.find_all("a", class_="karta karta")
 
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
-        
+
         for flight in flights:
-            flight_link = flight['href']
-            site = requests.get(flight_link)
-            card = BeautifulSoup(site.content, 'html.parser')
+            relative_link = flight.get('href')
+            if relative_link:
+                # Użyj urljoin, aby uzyskać pełny URL
+                flight_link = urljoin(charter_url, relative_link)
+                with sync_playwright() as p:
+                    browser = p.chromium.launch(headless=True)
+                    page = browser.new_page()
+                    page.goto(flight_link)
 
-            # Znalezienie daty, państwa, miasta i godziny
-            date_div = card.find('div', class_='termin active')
-            date = date_div.get_text(strip=True) if date_div else ""
+                    # Czekaj na załadowanie treści
+                    page.wait_for_load_state('networkidle')
 
-            # Informacje o wylocie
-            departure = card.find_all('div', class_='lot-info__col-side')[0]
-            departure_country = departure.find('div', class_='panstwo').get_text(strip=True)
-            departure_city = departure.find('div', class_='miasto').get_text(strip=True)
-            departure_time = departure.find_all('div', class_='godz tooltip-wrap')[0].get_text(strip=True)
+                    # Pobierz treść strony
+                    content = page.content()
+                    browser.close()
 
-            # Informacje o przylocie
-            arrival = card.find_all('div', class_='lot-info__col-side')[1]
-            arrival_country = arrival.find('div', class_='panstwo').get_text(strip=True)
-            arrival_city = arrival.find('div', class_='miasto').get_text(strip=True)
-            arrival_time = arrival.find_all('div', class_='godz tooltip-wrap')[0].get_text(strip=True)
+                card = BeautifulSoup(content, 'html.parser')
 
-            # Cena
-            price_div = card.find('div', class_='karta-lotu__cena')
-            price_text = price_div.get_text(strip=True) if price_div else ""
-            price = int(re.sub(r'\D', '', price_text)) if price_text else None
+                # Znajdź wszystkie informacje o lotach
+                flight_infos = card.find_all('div', class_='bilety')
 
-            # Generowanie hasha dla lotu
-            flight_string = f"{date} {departure_country} {departure_city} {departure_time} {arrival_country} {arrival_city} {arrival_time}"
-            flight_hash = hashlib.md5(flight_string.encode('utf-8')).hexdigest()
+                for flight_info in flight_infos:
+                    # Znalezienie daty
+                    date_div = flight_info.find('div', class_='termin active')
+                    date = date_div.get_text(strip=True) if date_div else ""
+                    
+                    # Informacje o wylocie
+                    departure_info = flight_info.find_all('div', class_='lot-info__col-side')[0]
+                    departure_country = departure_info.find('div', class_='panstwo').get_text(strip=True)
+                    departure_city = departure_info.find('div', class_='miasto').get_text(strip=True)
+                    departure_time = departure_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
 
-            # Sprawdzamy, czy lot już istnieje
-            c.execute('SELECT * FROM charters WHERE trip_hash = ?', (flight_hash,))
-            row = c.fetchone()
+                    # Informacje o przylocie
+                    arrival_info = flight_info.find_all('div', class_='lot-info__col-side')[1]
+                    arrival_country = arrival_info.find('div', class_='panstwo').get_text(strip=True)
+                    arrival_city = arrival_info.find('div', class_='miasto').get_text(strip=True)
+                    arrival_time = arrival_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
 
-            if row:
-                # Aktualizacja rekordu w tabeli `charters`
-                c.execute('UPDATE charters SET date = ?, departure_country = ?, departure_city = ?, departure_time = ?, arrival_country = ?, arrival_city = ?, arrival_time = ?, flight_url = ? WHERE trip_hash = ?',
-                          (date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, flight_hash))
+                    # Cena
+                    price_div = flight_info.find('div', class_='karta-lotu__cena')
+                    price_text = price_div.get_text(strip=True) if price_div else ""
+                    price = int(re.sub(r'\D', '', price_text)) if price_text else None
 
-                # Aktualizacja historii cen
-                c.execute('SELECT price FROM charter_price_history WHERE trip_hash = ? ORDER BY date DESC LIMIT 1', (flight_hash,))
-                history_row = c.fetchone()
+                    # Generowanie hasha dla lotu
+                    flight_string = f"{date} {departure_country} {departure_city} {departure_time} {arrival_country} {arrival_city} {arrival_time}"
+                    flight_hash = hashlib.md5(flight_string.encode('utf-8')).hexdigest()
 
-                if history_row and history_row[0] != price:
-                    # Dodajemy nową cenę do tabeli `charter_price_history`
-                    c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
-                              (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
-            else:
-                # Dodanie nowego rekordu do tabeli `charters`
-                c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
-                          (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link))
+                    # Sprawdzamy, czy lot już istnieje
+                    c.execute('SELECT * FROM charters WHERE trip_hash = ?', (flight_hash,))
+                    row = c.fetchone()
 
-                # Dodajemy nową cenę do tabeli `charter_price_history`
-                if price is not None:
-                    c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
-                              (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
+                    if row:
+                        # Aktualizacja rekordu w tabeli `charters`
+                        c.execute('UPDATE charters SET date = ?, departure_country = ?, departure_city = ?, departure_time = ?, arrival_country = ?, arrival_city = ?, arrival_time = ?, flight_url = ? WHERE trip_hash = ?',
+                                  (date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link, flight_hash))
+
+                        # Aktualizacja historii cen
+                        c.execute('SELECT price FROM charter_price_history WHERE trip_hash = ? ORDER BY date DESC LIMIT 1', (flight_hash,))
+                        history_row = c.fetchone()
+
+                        if history_row and history_row[0] != price:
+                            # Dodajemy nową cenę do tabeli `charter_price_history`
+                            c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
+                                      (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
+                    else:
+                        # Dodanie nowego rekordu do tabeli `charters`
+                        c.execute('INSERT INTO charters (trip_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                                  (flight_hash, date, departure_country, departure_city, departure_time, arrival_country, arrival_city, arrival_time, flight_link))
+
+                        # Dodajemy nową cenę do tabeli `charter_price_history`
+                        if price is not None:
+                            c.execute('INSERT INTO charter_price_history (trip_hash, date, price) VALUES (?, ?, ?)',
+                                      (flight_hash, datetime.now().strftime('%Y-%m-%d %H:%M:%S'), price))
 
     print("Charter scraping completed!")
-    
-
 
 def schedule_scraping():
     print("Scraping scheduled...")
@@ -164,3 +194,6 @@ def schedule_scraping():
     scheduler.add_job(scrape_and_load_offers, trigger=IntervalTrigger(minutes=1))
     scheduler.add_job(scrape_and_load_charters, trigger=IntervalTrigger(minutes=2))
     scheduler.start()
+
+if __name__ == "__main__":
+    schedule_scraping()
