@@ -4,3 +4,4 @@ Flask>=2.3.2
 beautifulsoup4>=4.12.2
 APScheduler>=3.10.1
 yagmail>=0.15.293
+playwright
