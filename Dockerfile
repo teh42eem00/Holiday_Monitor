@@ -14,6 +14,8 @@ COPY requirements.txt .
 RUN pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Install Playwright and its dependencies
+RUN python -m playwright install
 
 # Copy the entire project directory to the container
 COPY . .
