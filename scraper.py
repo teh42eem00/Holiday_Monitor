@@ -139,13 +139,13 @@ def scrape_and_load_charters():
                     date = date_div.get_text(strip=True) if date_div else ""
                     
                     # Informacje o wylocie
-                    departure_info = flight_info.find_all('div', class_='lot-info__col-side')[0]
+                    departure_info = flight_info.find('div', class_='lot-info__col-side')
                     departure_country = departure_info.find('div', class_='panstwo').get_text(strip=True)
                     departure_city = departure_info.find('div', class_='miasto').get_text(strip=True)
                     departure_time = departure_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
 
                     # Informacje o przylocie
-                    arrival_info = flight_info.find_all('div', class_='lot-info__col-side right')[1]
+                    arrival_info = flight_info.find('div', class_='lot-info__col-side right')
                     arrival_country = arrival_info.find('div', class_='panstwo').get_text(strip=True)
                     arrival_city = arrival_info.find('div', class_='miasto').get_text(strip=True)
                     arrival_time = arrival_info.find('div', class_='godz tooltip-wrap').get_text(strip=True)
