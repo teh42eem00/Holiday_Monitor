@@ -24,18 +24,32 @@
 
     <table>
         <thead>
-            <tr>
-                <th>Flight Hash</th>
-                <th>Date</th>
-                <th>Price</th>
+           <tr>
+                <th>Flight Date</th>
+                <th>Departure Country</th>
+                <th>Departure City</th>
+                <th>Departure Time</th>
+                <th>Arrival Country</th>
+                <th>Arrival City</th>
+                <th>Arrival Time</th>
+                <th>Change Date</th>
+                <th>New Price</th>
+                <th>Previous Price</th>
             </tr>
         </thead>
         <tbody>
-            {% for change in charter_changes %}
+            {% for change in changes %}
             <tr>
-                <td>{{ change[0] }}</td>
                 <td>{{ change[1] }}</td>
                 <td>{{ change[2] }}</td>
+                <td>{{ change[3] }}</td>
+                <td>{{ change[4] }}</td>
+                <td>{{ change[5] }}</td>
+                <td>{{ change[6] }}</td>
+                <td>{{ change[7] }}</td>
+                <td>{{ change[8] }}</td>
+                <td>{{ change[9] }}</td>
+                <td>{{ change[10] }}</td>
             </tr>
             {% endfor %}
         </tbody>
