@@ -40,10 +40,6 @@ def charters():
 @app.route('/charter-changes')
 @login_required
 def charter_changes():
-    conn = sqlite3.connect(DATABASE)
-    cursor = conn.cursor()
-    
-    # Zapytanie SQL łączące tabelę `charters` z `charter_price_history`
     query = """
     SELECT
         ch.trip_hash,
@@ -66,57 +62,61 @@ def charter_changes():
     ORDER BY
         cph.date DESC;
     """
-    
-    cursor.execute(query)
-    changes = cursor.fetchall()
-    conn.close()
-    
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute(query)
+        changes = c.fetchall()
+
     return render_template('charter_changes.html', changes=changes)
 
-
 @app.route('/price-changes')
+@login_required
 def price_changes():
-    conn = sqlite3.connect(DATABASE)
-    c = conn.cursor()
-    c.execute('SELECT title, location, date, current_price, previous_price, departure_location, food, persons, change_date FROM price_changes ORDER BY change_date DESC')
-    price_changes = c.fetchall()
-    conn.close()
+    query = """
+    SELECT
+        title, location, date, current_price, previous_price,
+        departure_location, food, persons, change_date
+    FROM
+        price_changes
+    ORDER BY
+        change_date DESC
+    """
+    with sqlite3.connect(DATABASE) as conn:
+        c = conn.cursor()
+        c.execute(query)
+        price_changes = c.fetchall()
+
     return render_template('price_changes.html', price_changes=price_changes)
 
 # Route for displaying trips
 @app.route('/trips')
 @login_required
 def trips():
-    # Retrieve the number of adults, children, and country from the URL query parameters
     persons = request.args.get('persons')
     country = request.args.get('country')
 
+    query = 'SELECT * FROM trips'
+    params = []
+    conditions = []
+
+    if country:
+        conditions.append('location LIKE ?')
+        params.append(f'%{country}%')
+    if persons:
+        if persons in ['2+0', '2+2']:
+            conditions.append('persons = ?')
+            persons_map = {'2+0': '2 adults, 0 children', '2+2': '2 adults, 2 children'}
+            params.append(persons_map[persons])
+
+    if conditions:
+        query += ' WHERE ' + ' AND '.join(conditions)
+    query += ' ORDER BY price ASC'
+
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
+        c.execute(query, params)
+        trips = c.fetchall()
 
-        if country and persons:
-            # Filter trips by country and persons
-            if persons == '2+0':
-                c.execute(
-                    'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 0 children" ORDER BY price ASC',
-                    ('%' + country + '%',))
-            elif persons == '2+2':
-                c.execute(
-                    'SELECT * FROM trips WHERE location LIKE ? AND persons = "2 adults, 2 children" ORDER BY price ASC',
-                    ('%' + country + '%',))
-            else:
-                c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
-        elif country:
-            # Filter trips by country
-            c.execute('SELECT * FROM trips WHERE location LIKE ? ORDER BY price ASC', ('%' + country + '%',))
-        elif persons == '2+0':
-            c.execute('SELECT * FROM trips WHERE persons = "2 adults, 0 children" ORDER BY price ASC')
-        elif persons == '2+2':
-            c.execute('SELECT * FROM trips WHERE persons = "2 adults, 2 children" ORDER BY price ASC')
-        else:
-            c.execute('SELECT * FROM trips ORDER BY price ASC')
-
-    trips = c.fetchall()
     return render_template('trips.html', trips=trips)
 
 # Route to empty trips db
@@ -125,8 +125,9 @@ def trips():
 def empty_trips():
     if request.method == 'GET':
         with sqlite3.connect(DATABASE) as conn:
-            conn.execute('DELETE FROM trips')
-
+            c = conn.cursor()
+            c.execute('DELETE FROM trips')
+            conn.commit()
         return redirect(url_for('trips'))
 
     return redirect(url_for('index'))
@@ -141,7 +142,9 @@ def register():
         hashed_password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
         with sqlite3.connect(DATABASE) as conn:
-            conn.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+            c = conn.cursor()
+            c.execute('INSERT INTO users (username, password) VALUES (?, ?)', (username, hashed_password))
+            conn.commit()
 
         return redirect(url_for('index'))
 
@@ -156,8 +159,9 @@ def login():
         password = request.form['password']
 
         with sqlite3.connect(DATABASE) as conn:
-            cursor = conn.execute('SELECT password FROM users WHERE username = ?', (username,))
-            row = cursor.fetchone()
+            c = conn.cursor()
+            c.execute('SELECT password FROM users WHERE username = ?', (username,))
+            row = c.fetchone()
             if row and bcrypt.checkpw(password.encode('utf-8'), row[0]):
                 session['username'] = username
                 return redirect(url_for('trips'))
@@ -185,7 +189,9 @@ def subscribe():
 
         # Save the subscription details in the database
         with sqlite3.connect(DATABASE) as conn:
-            conn.execute('INSERT INTO subscriptions (email, desired_price) VALUES (?, ?)', (email, price))
+            c = conn.cursor()
+            c.execute('INSERT INTO subscriptions (email, desired_price) VALUES (?, ?)', (email, price))
+            conn.commit()
 
         return redirect(url_for('trips'))
 
@@ -199,7 +205,9 @@ def unsubscribe():
     email = request.form['email']
 
     with sqlite3.connect(DATABASE) as conn:
-        conn.execute('DELETE FROM subscriptions WHERE email = ?', (email,))
+        c = conn.cursor()
+        c.execute('DELETE FROM subscriptions WHERE email = ?', (email,))
+        conn.commit()
 
     return redirect(url_for('trips'))
 
