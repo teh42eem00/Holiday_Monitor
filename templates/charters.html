@@ -41,7 +41,7 @@
             {% for charter in charters %}
             <tr>
                 <td>{{ charter[2] }}</td>
-                <td>{{ charter[3] }}</td>
+                 <td style="color: {% if charter[3] < charter[4] %}green{% elif charter[3] > charter[4] %}red{% endif %}; font-weight: {% if charter[3] != charter[4] %}bold{% endif %}">{{ charter[3] }}</td>
                 <td>{{ charter[4] }}</td>
                 <td>{{ charter[5] }}</td>
                 <td>{{ charter[6] }}</td>
