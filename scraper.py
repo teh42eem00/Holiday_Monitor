@@ -96,7 +96,7 @@ def scrape_and_load_charters():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(charter_url)
+        page.goto(charter_url, timeout=60000)
 
         # Czekaj na załadowanie treści
         page.wait_for_selector('a.karta.karta', timeout=60000)  # Czekać, aż pojawią się linki do lotów
@@ -119,7 +119,7 @@ def scrape_and_load_charters():
                 with sync_playwright() as p:
                     browser = p.chromium.launch(headless=True)
                     page = browser.new_page()
-                    page.goto(flight_link)
+                    page.goto(flight_link, timeout=60000)
 
                     # Czekaj na załadowanie treści
                     page.wait_for_selector('div.bilety', timeout=60000)
