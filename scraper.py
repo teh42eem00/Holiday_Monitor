@@ -60,8 +60,8 @@ def scrape_and_load_offers():
                 if row:
                     stored_price = row[0]
                     if int(price) != stored_price:
-                        c.execute('UPDATE trips SET price = ?, last_price = ?, food = ?, persons = ?, review_score = ? WHERE trip_hash = ?',
-                                  (int(price), int(stored_price), food, persons_formatted, review_score, trip_hash))
+                        c.execute('UPDATE trips SET price = ?, last_price = ?, review_score = ? WHERE trip_hash = ?',
+                                  (int(price), int(stored_price), review_score, trip_hash))
                         c.execute('INSERT INTO price_changes (trip_hash, title, location, date, current_price, previous_price, departure_location, food, persons, change_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
                                   (trip_hash, title, location, days, int(price), int(stored_price), departure_location, food, persons_formatted, datetime.now()))
 
