@@ -99,7 +99,7 @@ def scrape_and_load_charters():
         page.goto(charter_url)
 
         # Czekaj na załadowanie treści
-        page.wait_for_selector('a.karta.karta')  # Czekać, aż pojawią się linki do lotów
+        page.wait_for_selector('a.karta.karta', timeout=60000)  # Czekać, aż pojawią się linki do lotów
 
         # Pobierz treść strony
         content = page.content()
@@ -122,7 +122,7 @@ def scrape_and_load_charters():
                     page.goto(flight_link)
 
                     # Czekaj na załadowanie treści
-                    page.wait_for_selector('div.bilety')
+                    page.wait_for_selector('div.bilety', timeout=60000)
 
                     # Pobierz treść strony
                     content = page.content()
