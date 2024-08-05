@@ -32,10 +32,7 @@ def scrape_and_load_offers():
                 price = trip.find("span", class_="r-bloczek-cena__aktualna").text.strip()
                 departure_location = trip.find("div", class_="r-bloczek-wlasciwosci__dni").find_next('div', class_='r-bloczek-wlasciwosci__wlasciwosc').text.strip()
                 food_element = trip.find("span", class_="r-bloczek-wyzywienie__nazwa")
-                if food_element:
-                    food = food_element.text.strip()
-                else:
-                    food = None
+                food = food_element.text.strip() if food_element else ""
                 
                 # Extract review score
                 review_score_tag = trip.find("span", class_="r-typography--bold")
