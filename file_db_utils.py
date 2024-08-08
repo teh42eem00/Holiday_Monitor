@@ -5,6 +5,9 @@ DATABASE = 'database.db'
 def create_database():
     conn = sqlite3.connect(DATABASE)
     c = conn.cursor()
+    # Ustawienie trybu WAL
+    c.execute('PRAGMA journal_mode=WAL')
+    
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT, username TEXT, password TEXT)''')
     c.execute('''CREATE TABLE IF NOT EXISTS trips
