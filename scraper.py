@@ -99,8 +99,13 @@ def scrape_and_load_charters():
         page = browser.new_page()
         page.goto(charter_url, timeout=120000)
 
-        # Czekaj na załadowanie treści
-        page.wait_for_selector('a.karta.karta', timeout=120000)  # Czekać, aż pojawią się linki do lotów
+        try:
+            # Czekaj na załadowanie treści przez 30s
+            page.wait_for_selector('a.karta.karta', timeout=30000)  # Timeout zmniejszony do 30s
+        except TimeoutError:
+            print("Timeout while waiting for flight links. Skipping this run.")
+            browser.close()
+            return  # Przerywamy funkcję, jeśli timeout wystąpił
 
         # Pobierz treść strony
         content = page.content()
@@ -122,8 +127,13 @@ def scrape_and_load_charters():
                     page = browser.new_page()
                     page.goto(flight_link, timeout=120000)
 
-                    # Czekaj na załadowanie treści
-                    page.wait_for_selector('div.bilety', timeout=120000)
+                    try:
+                        # Czekaj na załadowanie treści przez 30s
+                        page.wait_for_selector('div.bilety', timeout=30000)  # Timeout zmniejszony do 30s
+                    except TimeoutError:
+                        print(f"Timeout while waiting for 'div.bilety' on page {flight_link}. Skipping this flight.")
+                        browser.close()
+                        continue  # Przejdź do następnego lotu
 
                     # Pobierz treść strony
                     content = page.content()
