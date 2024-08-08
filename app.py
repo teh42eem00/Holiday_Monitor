@@ -12,6 +12,12 @@ app.secret_key = 'SomeSecretKey!1'
 create_database()
 schedule_scraping()
 
+def sort_order_toggle(current_sort_by):
+    sort_by = request.args.get('sort_by', 'price')
+    sort_order = request.args.get('sort_order', 'ASC')
+    if sort_by == current_sort_by:
+        return 'DESC' if sort_order == 'ASC' else 'ASC'
+    return 'ASC'
 
 # Route for the main page
 @app.route('/')
@@ -92,33 +98,35 @@ def price_changes():
 @app.route('/trips')
 @login_required
 def trips():
-    persons = request.args.get('persons')
-    country = request.args.get('country')
+    sort_by = request.args.get('sort_by', 'price')
+    sort_order = request.args.get('sort_order', 'ASC')
 
-    query = 'SELECT * FROM trips'
-    params = []
-    conditions = []
+    valid_columns = {
+        'title': 'title',
+        'location': 'location',
+        'days': 'days',
+        'price': 'price',
+        'last_price': 'last_price',
+        'departure_location': 'departure_location',
+        'food': 'food',
+        'persons': 'persons',
+        'review_score': 'review_score'
+    }
 
-    if country:
-        conditions.append('location LIKE ?')
-        params.append(f'%{country}%')
-    if persons:
-        if persons in ['2+0', '2+2']:
-            conditions.append('persons = ?')
-            persons_map = {'2+0': '2 adults, 0 children', '2+2': '2 adults, 2 children'}
-            params.append(persons_map[persons])
+    if sort_by not in valid_columns:
+        sort_by = 'price'
+    if sort_order not in ['ASC', 'DESC']:
+        sort_order = 'ASC'
 
-    if conditions:
-        query += ' WHERE ' + ' AND '.join(conditions)
-    query += ' ORDER BY price ASC'
+    query = f'SELECT * FROM trips ORDER BY {valid_columns[sort_by]} {sort_order}'
 
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
-        c.execute(query, params)
+        c.execute(query)
         trips = c.fetchall()
 
-    return render_template('trips.html', trips=trips)
-
+    return render_template('trips.html', trips=trips, sort_by=sort_by, sort_order=sort_order)
+    
 # Route to empty trips db
 @app.route('/empty-trips', methods=['GET', 'POST'])
 @login_required
