@@ -15,7 +15,7 @@ def scrape_and_load_offers():
     print("Starting scraping...")
 
     urls = load_urls_from_file()
-    with sqlite3.connect(DATABASE) as conn:
+    with sqlite3.connect(DATABASE, timeout=10, check_same_thread=False) as conn:
         c = conn.cursor()
         c.execute('SELECT * FROM subscriptions')
         subscriptions = c.fetchall()
@@ -97,10 +97,10 @@ def scrape_and_load_charters():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
-        page.goto(charter_url, timeout=60000)
+        page.goto(charter_url, timeout=120000)
 
         # Czekaj na załadowanie treści
-        page.wait_for_selector('a.karta.karta', timeout=60000)  # Czekać, aż pojawią się linki do lotów
+        page.wait_for_selector('a.karta.karta', timeout=120000)  # Czekać, aż pojawią się linki do lotów
 
         # Pobierz treść strony
         content = page.content()
@@ -109,7 +109,7 @@ def scrape_and_load_charters():
     soup = BeautifulSoup(content, 'html.parser')
     flights = soup.find_all("a", class_="karta karta")
 
-    with sqlite3.connect(DATABASE) as conn:
+    with sqlite3.connect(DATABASE, timeout=10, check_same_thread=False) as conn:
         c = conn.cursor()
 
         for flight in flights:
@@ -120,10 +120,10 @@ def scrape_and_load_charters():
                 with sync_playwright() as p:
                     browser = p.chromium.launch(headless=True)
                     page = browser.new_page()
-                    page.goto(flight_link, timeout=60000)
+                    page.goto(flight_link, timeout=120000)
 
                     # Czekaj na załadowanie treści
-                    page.wait_for_selector('div.bilety', timeout=60000)
+                    page.wait_for_selector('div.bilety', timeout=120000)
 
                     # Pobierz treść strony
                     content = page.content()
