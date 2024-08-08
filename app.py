@@ -12,13 +12,6 @@ app.secret_key = 'SomeSecretKey!1'
 create_database()
 schedule_scraping()
 
-def sort_order_toggle(current_sort_by):
-    sort_by = request.args.get('sort_by', 'price')
-    sort_order = request.args.get('sort_order', 'ASC')
-    if sort_by == current_sort_by:
-        return 'DESC' if sort_order == 'ASC' else 'ASC'
-    return 'ASC'
-
 # Route for the main page
 @app.route('/')
 def index():
