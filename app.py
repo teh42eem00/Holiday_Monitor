@@ -98,28 +98,16 @@ def price_changes():
 @app.route('/trips')
 @login_required
 def trips():
-    sort_by = request.args.get('sort_by', 'price')
-    sort_order = request.args.get('sort_order', 'ASC')
+    sort_by = request.args.get('sort_by', 'price')  # Domyślnie sortuj po cenie
+    sort_order = request.args.get('sort_order', 'ASC')  # Domyślnie sortuj rosnąco
 
-    valid_columns = {
-        'title': 'title',
-        'location': 'location',
-        'days': 'days',
-        'price': 'price',
-        'last_price': 'last_price',
-        'departure_location': 'departure_location',
-        'food': 'food',
-        'persons': 'persons',
-        'review_score': 'review_score'
-    }
-
+    valid_columns = ['title', 'location', 'days', 'price', 'last_price', 'departure_location', 'food', 'persons', 'review_score']
     if sort_by not in valid_columns:
         sort_by = 'price'
     if sort_order not in ['ASC', 'DESC']:
         sort_order = 'ASC'
 
-    query = f'SELECT * FROM trips ORDER BY {valid_columns[sort_by]} {sort_order}'
-
+    query = f'SELECT * FROM trips ORDER BY {sort_by} {sort_order}'
     with sqlite3.connect(DATABASE) as conn:
         c = conn.cursor()
         c.execute(query)
