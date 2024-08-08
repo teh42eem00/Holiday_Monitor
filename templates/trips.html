@@ -24,15 +24,15 @@
     <table>
         <thead>
         <tr>
-            <th><a href="{{ url_for('trips', sort_by='title', sort_order=sort_order_toggle('title')) }}">Hotel Name</a></th>
-            <th><a href="{{ url_for('trips', sort_by='location', sort_order=sort_order_toggle('location')) }}">Type + Location</a></th>
-            <th><a href="{{ url_for('trips', sort_by='days', sort_order=sort_order_toggle('days')) }}">Date + Length</a></th>
-            <th><a href="{{ url_for('trips', sort_by='price', sort_order=sort_order_toggle('price')) }}">Price</a></th>
-            <th><a href="{{ url_for('trips', sort_by='last_price', sort_order=sort_order_toggle('last_price')) }}">Last Price</a></th>
-            <th><a href="{{ url_for('trips', sort_by='departure_location', sort_order=sort_order_toggle('departure_location')) }}">Departure Location</a></th>
-            <th><a href="{{ url_for('trips', sort_by='food', sort_order=sort_order_toggle('food')) }}">Food</a></th>
-            <th><a href="{{ url_for('trips', sort_by='persons', sort_order=sort_order_toggle('persons')) }}">Persons</a></th>
-            <th><a href="{{ url_for('trips', sort_by='review_score', sort_order=sort_order_toggle('review_score')) }}">Review Score</a></th>
+            <th><a href="{{ url_for('trips', sort_by='title', sort_order='ASC' if sort_by == 'title' and sort_order == 'DESC' else 'DESC') }}">Hotel Name</a></th>
+            <th><a href="{{ url_for('trips', sort_by='location', sort_order='ASC' if sort_by == 'location' and sort_order == 'DESC' else 'DESC') }}">Type + Location</a></th>
+            <th><a href="{{ url_for('trips', sort_by='days', sort_order='ASC' if sort_by == 'days' and sort_order == 'DESC' else 'DESC') }}">Date + Length</a></th>
+            <th><a href="{{ url_for('trips', sort_by='price', sort_order='ASC' if sort_by == 'price' and sort_order == 'DESC' else 'DESC') }}">Price</a></th>
+            <th><a href="{{ url_for('trips', sort_by='last_price', sort_order='ASC' if sort_by == 'last_price' and sort_order == 'DESC' else 'DESC') }}">Last Price</a></th>
+            <th><a href="{{ url_for('trips', sort_by='departure_location', sort_order='ASC' if sort_by == 'departure_location' and sort_order == 'DESC' else 'DESC') }}">Departure Location</a></th>
+            <th><a href="{{ url_for('trips', sort_by='food', sort_order='ASC' if sort_by == 'food' and sort_order == 'DESC' else 'DESC') }}">Food</a></th>
+            <th><a href="{{ url_for('trips', sort_by='persons', sort_order='ASC' if sort_by == 'persons' and sort_order == 'DESC' else 'DESC') }}">Persons</a></th>
+            <th><a href="{{ url_for('trips', sort_by='review_score', sort_order='ASC' if sort_by == 'review_score' and sort_order == 'DESC' else 'DESC') }}">Review Score</a></th>
         </tr>
         </thead>
         <tbody>
