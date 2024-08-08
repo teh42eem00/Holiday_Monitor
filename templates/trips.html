@@ -21,47 +21,18 @@
             </ul>
         </div>
     </nav>
-
-    <div class="row">
-        <form action="/trips" method="get">
-            <div class="input-field col s12 m6">
-                <select name="country">
-                    <option value="" selected>All countries</option>
-                    <option value="Grecja">Greece</option>
-                    <option value="Czarnogóra">Montenegro</option>
-                    <option value="Chorwacja">Croatia</option>
-                    <option value="Bułgaria">Bulgaria</option>
-                    <option value="Albania">Albania</option>
-                    <option value="Turcja">Turkey</option>
-                </select>
-                <label>Country</label>
-            </div>
-            <div class="input-field col s12 m6">
-                <select name="persons">
-                    <option value="" selected>All person options</option>
-                    <option value="2+0">2 adults, 0 children</option>
-                    <option value="2+2">2 adults, 2 children</option>
-                </select>
-                <label>Persons</label>
-            </div>
-            <div class="input-field col s12">
-                <button class="btn waves-effect waves-light" type="submit">Filter</button>
-            </div>
-        </form>
-    </div>
-
     <table>
         <thead>
         <tr>
-            <th>Hotel name</th>
-            <th>Type + Location</th>
-            <th>Date + length</th>
-            <th>Price</th>
-            <th>Last Price</th>
-            <th>Departure Location</th>
-            <th>Food</th>
-            <th>Persons</th>
-            <th>Review Score</th>
+            <th><a href="{{ url_for('trips', sort_by='title', sort_order=sort_order_toggle('title')) }}">Hotel Name</a></th>
+            <th><a href="{{ url_for('trips', sort_by='location', sort_order=sort_order_toggle('location')) }}">Type + Location</a></th>
+            <th><a href="{{ url_for('trips', sort_by='days', sort_order=sort_order_toggle('days')) }}">Date + Length</a></th>
+            <th><a href="{{ url_for('trips', sort_by='price', sort_order=sort_order_toggle('price')) }}">Price</a></th>
+            <th><a href="{{ url_for('trips', sort_by='last_price', sort_order=sort_order_toggle('last_price')) }}">Last Price</a></th>
+            <th><a href="{{ url_for('trips', sort_by='departure_location', sort_order=sort_order_toggle('departure_location')) }}">Departure Location</a></th>
+            <th><a href="{{ url_for('trips', sort_by='food', sort_order=sort_order_toggle('food')) }}">Food</a></th>
+            <th><a href="{{ url_for('trips', sort_by='persons', sort_order=sort_order_toggle('persons')) }}">Persons</a></th>
+            <th><a href="{{ url_for('trips', sort_by='review_score', sort_order=sort_order_toggle('review_score')) }}">Review Score</a></th>
         </tr>
         </thead>
         <tbody>
