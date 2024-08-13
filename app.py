@@ -68,6 +68,19 @@ def charter_changes():
 
     return render_template('charter_changes.html', changes=changes)
 
+# Route to empty trips db
+@app.route('/empty-charters', methods=['GET', 'POST'])
+@login_required
+def empty_charters():
+    if request.method == 'GET':
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            c.execute('DELETE FROM charters')
+            conn.commit()
+        return redirect(url_for('charters'))
+
+    return redirect(url_for('index'))
+
 @app.route('/price-changes')
 @login_required
 def price_changes():
