@@ -92,7 +92,7 @@ def scrape_and_load_offers():
 def scrape_and_load_charters():
     print("Starting charter scraping...")
 
-    charter_url = 'https://biletyczarterowe.r.pl/szukaj?data=&idPrzylot=179487_317769&idWylot=317795&oneWay=false&pakietIdPrzylot=179487_317769&pakietIdWylot=179487_317795&przylotDo&przylotOd&skad%5B%5D=KTW&skad%5B%5D=KRK&wiek%5B%5D=1989-10-30&wiek%5B%5D=1989-10-30&wiek%5B%5D=2020-05-23&wiek%5B%5D=2012-08-22&wylotDo=2025-01-26&wylotOd=2025-01-17'
+    charter_url = 'https://biletyczarterowe.r.pl/szukaj?data=&idPrzylot=179487_317769&idWylot=317795&oneWay=false&pakietIdPrzylot=179487_317769&pakietIdWylot=179487_317795&przylotDo&przylotOd&skad%5B%5D=KTW&skad%5B%5D=KRK&wiek%5B%5D=1989-10-30&wiek%5B%5D=1989-10-30&wiek%5B%5D=2020-05-23&wiek%5B%5D=2012-08-22&wylotDo=2025-02-02&wylotOd=2025-01-25'
 
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=True)
